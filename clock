@@ -1,0 +1,186 @@
+#include<reg52.h>
+#define uchar unsigned char
+#define uint unsigned int
+sbit dula=P2^6;
+sbit wela=P2^7;
+sbit key1=P3^4;
+sbit key2=P3^5;
+sbit key3=P3^6;
+sbit key4=P3^7;
+uchar code table[]={0x3f,0x06,0x5b,0x4f,
+					0x66,0x6d,0x7d,0x07,
+					0x7f,0x6f,0x77,0x7c,
+					0x39,0x5e,0x79,0x71};
+uchar h,m,s,num,num1;
+void display(uchar,uchar,uchar);
+void keyscan();
+void delayms(uint);
+void main()
+{
+	TMOD=0x01;
+	TH0=(65536-46080)/256;
+	TL0=(65536-46080)%256;
+	EA=1;
+	ET0=1;
+	TR0=1;
+	while(1)
+	{
+		display(h,m,s);
+		keyscan();
+	}
+}
+void keyscan()
+{
+	if(!key1)
+	{
+		delayms(10);
+		if(!key1)
+		{
+			h++;
+			if(h==24)
+			{
+				h=0;
+			}
+			while(!key1);
+		}
+	}
+	if(!key2)
+	{
+		delayms(10);
+		if(!key2)
+		{
+			m++;
+			if(m==60)
+			{
+				m=0;
+				h++;
+				if(h==24)
+				{
+					h=0;
+				}
+			}
+			while(!key2);
+		}
+	}
+	if(!key3)
+	{
+		delayms(10);
+		if(!key3)
+		{
+			s++;
+			if(s==60)
+			{
+				s=0;
+				m++;
+				if(m==60)
+				{
+					m=0;
+					h++;
+					if(h==24)
+					{
+						h=0;
+					}
+				}
+			}	
+			while(!key3);
+		}
+	}
+	if(!key4)
+	{
+		delayms(10);
+		if(!key4)
+		{
+			s=0;
+			while(!key4);
+		}
+	}
+}
+void display(uchar ho,uchar mi,uchar se)
+{
+	uchar hs,hg,ms,mg,ss,sg;
+	sg=se%10;
+	ss=se/10;
+	mg=mi%10;
+	ms=mi/10;
+	hg=ho%10;
+	hs=ho/10;
+	dula=1;
+	P0=table[hs];
+	dula=0;
+	P0=0xff;
+	wela=1;
+	P0=0xfe;
+	wela=0;
+	delayms(5);
+	dula=1;
+	P0=table[hg];
+	dula=0;
+	P0=0xff;
+	wela=1;
+	P0=0xfd;
+	wela=0;
+	delayms(5);
+	dula=1;
+	P0=table[ms];
+	dula=0;
+	P0=0xff;
+	wela=1;
+	P0=0xfb;
+	wela=0;
+	delayms(5);
+	dula=1;
+	P0=table[mg];
+	dula=0;
+	P0=0xff;
+	wela=1;
+	P0=0xf7;
+	wela=0;
+	delayms(5);
+	dula=1;
+	P0=table[ss];
+	dula=0;
+	P0=0xff;
+	wela=1;
+	P0=0xef;
+	wela=0;
+	delayms(5);
+	dula=1;
+	P0=table[sg];
+	dula=0;
+	P0=0xff;
+	wela=1;
+	P0=0xdf;
+	wela=0;
+	delayms(5);
+}
+void delayms(uint xms)
+{
+	uint i,j;
+	for(i=xms;i>0;i--)
+		for(j=110;j>0;j--);
+}
+void T0_time() interrupt 1
+{
+	TH0=(65536-46080)/256;
+	TL0=(65536-46080)%256;
+	num++;
+	if(num==20)
+	{
+		num=0;
+		s++;
+		if(s==60)
+		{
+			s=0;
+			m++;
+			if(m==60)
+			{
+				m=0;
+				h++;
+				if(h==24)
+				{
+					h=0;
+				}
+			}
+		}
+	}
+}
